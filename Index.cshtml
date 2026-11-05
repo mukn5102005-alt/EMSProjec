@@ -1,45 +1,57 @@
-﻿@model EMSProject.Models.DashboardViewModel
+﻿@model IEnumerable<EMSProject.Models.Employee>
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Employees";
 }
 
 <div class="stat-grid">
     <div class="stat-card">
-        <p class="label">Total Headcount</p>
-        <p class="value">@Model.TotalHeadcount</p>
-    </div>
-    <div class="stat-card">
-        <p class="label">Total Payroll</p>
-        <p class="value">₹@Model.TotalPayroll.ToString("N0")</p>
+        <p class="label">Total Employees</p>
+        <p class="value">@Model.Count()</p>
     </div>
     <div class="stat-card">
         <p class="label">Departments</p>
-        <p class="value">@Model.DepartmentBreakdown.Count</p>
+        <p class="value">@Model.Select(e => e.DepartmentId).Distinct().Count()</p>
     </div>
 </div>
 
 <div class="glass-panel">
     <div class="panel-head">
-        <h3>Department Breakdown</h3>
+        <h3>All Employees</h3>
+        @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+        {
+            <a asp-action="Create" class="btn-primary">+ Add Employee</a>
+        }
     </div>
 
     <table class="data-table">
         <thead>
             <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Designation</th>
                 <th>Department</th>
-                <th>Employees</th>
-                <th>Total Salary</th>
-                <th>Avg. Salary</th>
+                <th>Salary</th>
+                <th>Status</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var dept in Model.DepartmentBreakdown)
+            @foreach (var emp in Model)
             {
                 <tr>
-                    <td>@dept.DepartmentName</td>
-                    <td>@dept.EmployeeCount</td>
-                    <td>₹@dept.TotalSalary.ToString("N0")</td>
-                    <td>₹@((dept.EmployeeCount > 0 ? dept.TotalSalary / dept.EmployeeCount : 0).ToString("N0"))</td>
+                    <td>@emp.FullName</td>
+                    <td>@emp.Email</td>
+                    <td>@emp.Designation</td>
+                    <td>@emp.Department?.Name</td>
+                    <td>₹@emp.Salary.ToString("N0")</td>
+                    <td><span class="badge active">Active</span></td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@emp.Id" class="btn-ghost">View</a>
+                        @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@emp.Id" class="btn-ghost">Edit</a>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
